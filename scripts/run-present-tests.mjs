@@ -28,6 +28,9 @@ const mockPlugin = {
     b.onResolve({ filter: /(^|\/)shiki-instance$/ }, () => ({
       path: join(repo, "tests", "mocks", "shiki-instance.mock.mts"),
     }));
+    b.onResolve({ filter: /(^|\/)session\.svelte$/ }, () => ({
+      path: join(repo, "tests", "mocks", "session.mock.mts"),
+    }));
     b.onResolve({ filter: /^@tauri-apps\/api\/(event|window|core)$/ }, () => ({
       path: join(repo, "tests", "mocks", "tauri-runtime.mock.mts"),
     }));
