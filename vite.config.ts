@@ -4,7 +4,7 @@ import { svelteMotionOptimize } from "@humanspeak/svelte-motion/vite";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-export default defineConfig(async () => ({
+export default defineConfig({
   plugins: [svelteMotionOptimize(), svelte(), tailwindcss()],
   resolve: {
     alias: {
@@ -39,4 +39,4 @@ export default defineConfig(async () => ({
       },
     },
   },
-}));
+});
