@@ -1,0 +1,33 @@
+# Logs
+logs
+*.log
+bun-debug.log*
+bun-error.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Personal Claude Code configuration (gateway keys, skills — not part of the project)
+.claude/
+
+# Runtime data (SQLite database lives here — never commit user data)
+data/
+*.db
+*.db-shm
+*.db-wal
+
+.cache-tests/

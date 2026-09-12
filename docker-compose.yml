@@ -1,0 +1,15 @@
+services:
+  devslides-online:
+    build: .
+    ports:
+      - "1420:1420"
+    volumes:
+      - devslides-data:/app/data
+    environment:
+      NODE_ENV: production
+      PORT: 1420
+      DATABASE_PATH: /app/data/devslides.db
+    restart: unless-stopped
+
+volumes:
+  devslides-data:

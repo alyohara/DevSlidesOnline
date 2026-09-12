@@ -1,0 +1,4 @@
+dist
+server/data
+package-lock.json
+.cache-tests

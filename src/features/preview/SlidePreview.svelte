@@ -1,0 +1,204 @@
+<script lang="ts">
+  /**
+   * Live slide preview using shared Shiki singleton + magic-move.
+   * Reads instant preview overrides from the rune store
+   * (previewProject / previewSlides / previewHighlights) so
+   * fontSize / lineHeight / transitions update live during drag.
+   */
+  import { magicMoveShikiDisplay } from "$lib/shiki/shiki-display.svelte";
+  import {
+    themeBackground,
+    resolveProjectLanguage,
+    type Project,
+  } from "$lib/types";
+  import { createEffectiveSettings } from "@/features/settings/effective-settings.svelte";
+  import {
+    previewMergedHighlights,
+    previewProjectSetting,
+  } from "@/features/settings/preview-settings";
+  import { effectiveSlideCode } from "$lib/stores/slide-code.svelte";
+  import { createCurrentSlide } from "@/features/slides/current-slide.svelte";
+  import {
+    DEFAULT_GLOBAL_DIM_AMOUNT,
+    DEFAULT_GLOBAL_SIZE_UP_AMOUNT,
+  } from "$lib/constants";
+  import HighlightLayer from "@/features/highlights/HighlightLayer.svelte";
+  import SlideImageLayers from "@/features/images/SlideImageLayers.svelte";
+  import MagicMoveBlock from "./MagicMoveBlock.svelte";
+  import PreviewFallback from "./PreviewFallback.svelte";
+  import PreviewStage from "./PreviewStage.svelte";
+  import { effectiveSlideImages } from "$lib/stores/slide-images.svelte";
+  import { imageEditorState } from "@/features/images/image-editor-state.svelte";
+  import type { SlideImage } from "$lib/types";
+
+  let {
+    project,
+    slideId,
+    isPresenting = false,
+    activeHighlightIndex = -1,
+    onHighlightExitComplete,
+    allowImageEditing = false,
+    onImagePatch,
+    onImageRemove,
+  }: {
+    project: Project;
+    /** Slide to show; falls back to ui.currentSlideId when omitted (§7.3). */
+    slideId?: string;
+    isPresenting?: boolean;
+    activeHighlightIndex?: number;
+    onHighlightExitComplete?: () => void;
+    /** Enable image drag/resize affordances (editor only). */
+    allowImageEditing?: boolean;
+    onImagePatch?: (id: string, patch: Partial<SlideImage>) => void;
+    onImageRemove?: (id: string) => void;
+  } = $props();
+
+  const currentSlide = createCurrentSlide(
+    () => project,
+    () => slideId,
+  );
+  const slide = $derived(currentSlide.activeSlide);
+  const rawCode = $derived(effectiveSlideCode(slide));
+
+  // Query cache writes replace the surrounding project / slide objects even
+  // when the effective preview text is unchanged (for example when a debounced
+  // save completes while the editor still holds the same local override).
+  // Hold on to a stable string so Shiki Magic Move only sees a code prop change
+  // when the actual text content changed.
+  let stableCode = $state("");
+  $effect.pre(() => {
+    const next = rawCode;
+    if (next !== stableCode) stableCode = next;
+  });
+
+  let containerEl = $state<HTMLDivElement | null>(null);
+  let codeContainerEl = $state<HTMLDivElement | null>(null);
+
+  // --- instant preview overrides ---
+  const effective = createEffectiveSettings(
+    () => project,
+    () => slide,
+  );
+
+  const language = $derived(resolveProjectLanguage(project));
+  const theme = $derived(previewProjectSetting("theme") ?? project.theme);
+  const previewBlackCodeBackground = $derived(
+    previewProjectSetting("useBlackCodeBackground"),
+  );
+
+  const shiki = magicMoveShikiDisplay(() => ({ theme, language }));
+
+  const s = $derived(project.settings);
+  const fontSize = $derived(effective.settings.fontSize);
+  const lineHeight = $derived(effective.settings.lineHeight);
+
+  // Global highlight overrides (only active when useGlobalHighlight)
+  const useGlobalHighlight = $derived(s.useGlobalHighlight);
+  const globalDimAmount = $derived(
+    useGlobalHighlight
+      ? (effective.settings.globalDimAmount ?? DEFAULT_GLOBAL_DIM_AMOUNT)
+      : undefined,
+  );
+  const globalSizeUpAmount = $derived(
+    useGlobalHighlight
+      ? (effective.settings.globalSizeUpAmount ?? DEFAULT_GLOBAL_SIZE_UP_AMOUNT)
+      : undefined,
+  );
+  const globalDimColor = $derived(
+    (useGlobalHighlight
+      ? (effective.settings.highlightDimColor ?? "theme")
+      : "theme") as "black" | "theme",
+  );
+
+  const bg = $derived(
+    (previewBlackCodeBackground ?? s.useBlackCodeBackground)
+      ? "#000000"
+      : themeBackground(shiki.displayTheme),
+  );
+  const centerBlock = $derived(s.codeAlign === "center");
+
+  const stagePad = $derived(isPresenting ? "p-16 md:p-24" : "p-8 md:p-12");
+
+  const rawHighlights = $derived(slide?.highlights ?? []);
+  const highlights = $derived(previewMergedHighlights(rawHighlights));
+
+  const activeHighlight = $derived(
+    activeHighlightIndex >= 0 && activeHighlightIndex < highlights.length
+      ? (highlights[activeHighlightIndex] ?? null)
+      : null,
+  );
+
+  const previewFontSize = $derived(isPresenting ? fontSize * 1.15 : fontSize);
+
+  const slideImages = $derived(effectiveSlideImages(slide));
+  const imageEditActive = $derived(
+    allowImageEditing && imageEditorState.editMode && !isPresenting,
+  );
+  const imageEditProps = $derived({
+    editable: imageEditActive,
+    onPatch: onImagePatch,
+    onRemove: onImageRemove,
+  });
+</script>
+
+{#if !slide}
+  <div
+    class="flex h-full w-full items-center justify-center text-muted-foreground"
+  >
+    No slides
+  </div>
+{:else if !shiki.displayHighlighter}
+  <PreviewFallback
+    isMerustmarFail={language === "merustmar" && shiki.shikiLoadFailed}
+    theme={shiki.displayTheme}
+    code={stableCode}
+    fontSize={previewFontSize}
+    {lineHeight}
+    {stagePad}
+    {centerBlock}
+    {bg}
+    bind:ref={containerEl}
+  >
+    <SlideImageLayers
+      images={slideImages}
+      stageRef={() => containerEl}
+      {...imageEditProps}
+    />
+  </PreviewFallback>
+{:else}
+  <PreviewStage bind:ref={containerEl} {bg} {stagePad} {centerBlock}>
+    <SlideImageLayers
+      images={slideImages}
+      stageRef={() => containerEl}
+      {...imageEditProps}
+    />
+    <MagicMoveBlock
+      bind:ref={codeContainerEl}
+      {centerBlock}
+      {lineHeight}
+      fontSize={previewFontSize}
+      theme={shiki.displayTheme}
+      language={shiki.displayLanguage}
+      highlighter={shiki.displayHighlighter}
+      code={stableCode}
+      transition={effective.settings.transitionDuration}
+      stagger={effective.settings.stagger}
+      showLineNumbers={s.showLineNumbers}
+    />
+    <HighlightLayer
+      container={() => containerEl}
+      codeContainer={() => codeContainerEl}
+      code={() => stableCode}
+      highlight={() => activeHighlight}
+      highlighter={() => shiki.displayHighlighter}
+      theme={() => shiki.displayTheme}
+      language={() => shiki.displayLanguage}
+      fontSize={() => previewFontSize}
+      lineHeight={() => lineHeight}
+      onExitComplete={onHighlightExitComplete}
+      {globalDimAmount}
+      {globalSizeUpAmount}
+      {globalDimColor}
+    />
+  </PreviewStage>
+{/if}
