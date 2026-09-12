@@ -15,7 +15,7 @@ import { resolve } from "node:path";
 import { openDatabase } from "./db";
 import { createApp } from "./routes";
 
-const PORT = Number(process.env.PORT ?? 1420);
+const PORT = Number(process.env.PORT ?? 1421);
 const HOST = process.env.HOST ?? "0.0.0.0";
 
 // ./data relative to the server working directory (default when run via

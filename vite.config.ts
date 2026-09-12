@@ -4,9 +4,6 @@ import { svelteMotionOptimize } from "@humanspeak/svelte-motion/vite";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-// @ts-expect-error process is a nodejs global
-const host = process.env.TAURI_DEV_HOST;
-
 export default defineConfig(async () => ({
   plugins: [svelteMotionOptimize(), svelte(), tailwindcss()],
   resolve: {
@@ -19,7 +16,7 @@ export default defineConfig(async () => ({
     format: "es",
   },
   build: {
-    target: "esnext", // Modern browsers / Tauri webview only
+    target: "esnext", // Modern browsers only
     minify: "terser",
     sourcemap: false,
     cssCodeSplit: true,
@@ -32,18 +29,14 @@ export default defineConfig(async () => ({
   },
   clearScreen: false,
   server: {
+    // Dev: vite serves the SPA; `dev:server` runs the API on 1421.
     port: 1420,
     strictPort: true,
-    host: host || false,
-    hmr: host
-      ? {
-          protocol: "ws",
-          host,
-          port: 1421,
-        }
-      : undefined,
-    watch: {
-      ignored: ["**/src-tauri/**"],
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:1421",
+        changeOrigin: true,
+      },
     },
   },
 }));
