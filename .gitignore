@@ -13,6 +13,9 @@ dist-ssr
 .vscode/*
 !.vscode/extensions.json
 
+# TypeScript build info
+*.tsbuildinfo
+
 .idea
 .DS_Store
 *.suo
