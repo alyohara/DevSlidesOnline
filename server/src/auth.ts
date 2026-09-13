@@ -133,6 +133,12 @@ export function requireAuth(db: Database): MiddlewareHandler {
   };
 }
 
+function isSecureRequest(c: Context): boolean {
+  const forwarded = c.req.header("x-forwarded-proto");
+  if (forwarded) return forwarded.split(",")[0]?.trim() === "https";
+  return c.req.url.startsWith("https://");
+}
+
 export function authHelper(db: Database) {
   return {
     issueLoginCookie(c: Context, userId: string): void {
@@ -140,7 +146,7 @@ export function authHelper(db: Database) {
       setCookie(c, SESSION_COOKIE, token, {
         httpOnly: true,
         sameSite: "Lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: isSecureRequest(c),
         path: "/",
         maxAge: SESSION_TTL_MS / 1000,
       });
