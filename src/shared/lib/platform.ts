@@ -1,6 +1,6 @@
 /** Lightweight platform helpers (no extra plugin required). */
 
-export type AppPlatform = "macos" | "windows" | "unknown";
+type AppPlatform = "macos" | "windows" | "unknown";
 
 function detectPlatform(): AppPlatform {
   const ua = navigator.userAgent.toLowerCase();
@@ -11,7 +11,9 @@ function detectPlatform(): AppPlatform {
   return "unknown";
 }
 
-export const isMacOS = () => detectPlatform() === "macos";
+function isMacOS(): boolean {
+  return detectPlatform() === "macos";
+}
 
 /** Modifier label for UI hints. */
 export function modKeyLabel(): string {

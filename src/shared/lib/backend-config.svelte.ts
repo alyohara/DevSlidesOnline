@@ -9,7 +9,7 @@ import { THEMES as FALLBACK_THEMES, type ThemeMeta } from "./theme-meta";
  *
  * The backend is the source of truth for supported languages/themes and for
  * reset-to-default settings. These fallbacks keep the browser/dev/test contexts
- * usable before the Tauri bootstrap fetch lands (or when it never can).
+ * usable before the backend bootstrap fetch lands (or when it never can).
  */
 export interface DefaultProjectSettingsSnapshot {
   showLineNumbers: boolean;

@@ -1,8 +1,7 @@
 /**
  * Structured-token highlight pipeline — the single data path for highlight
- * planning. Replaces the old Rust HTML-slicing backend (src-tauri highlight.rs,
- * since deleted): highlighters now yield TOKEN LINES with raw (unescaped)
- * string content, selections are sliced on those strings with plain JS indices
+ * planning: highlighters yield TOKEN LINES with raw (unescaped) string
+ * content, selections are sliced on those strings with plain JS indices
  * (UTF-16 — same as textarea.selectionStart), and HTML escaping happens at
  * RENDER time. The entire historical bug class is impossible by construction
  * here: no mid-entity cuts (entities are produced after slicing), no tag

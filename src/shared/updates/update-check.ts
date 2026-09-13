@@ -1,7 +1,6 @@
 /**
- * Update checks — query the latest GitHub release through the Rust backend
- * (the webview CSP forbids outbound HTTP, so the fetch lives in Rust) and
- * surface the result:
+ * Update checks — query the latest GitHub release directly from the browser
+ * (the DevSlidesOnline repo) and surface the result:
  *   - startup probe: silent — never nags on network failure, only opens the
  *     dialog when a real update exists;
  *   - Help → "Check for Updates…": always gives the user an answer.

@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache frontend deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-frontend-${{ hashFiles('**/bun.lock') }}
+          restore-keys: ${{ runner.os }}-bun-
+
+      - name: Install frontend deps
+        run: bun install --frozen-lockfile
+
+      - name: Install server deps
+        working-directory: server
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck (server)
+        working-directory: server
+        run: bunx tsc --noEmit
+
+      - name: Svelte check
+        run: bun run check
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Version check
+        run: bun run check:versions
+
+      - name: Build
+        run: bun run build
+
+      - name: Tests
+        run: |
+          bun run test:highlight
+          bun run test:save-race
+          bun run test:stack-targeting
+          bun run test:app-flow

@@ -28,8 +28,9 @@ export const queryClient = new QueryClient({
   }),
   defaultOptions: {
     queries: {
-      // Local SQLite is the single source of truth and Tauri is the only writer,
-      // so we have absolute cache consistency. No need for background refetches.
+      // The server DB is the single source of truth and this client is the
+      // only writer, so we have absolute cache consistency — mutations
+      // invalidate instead of background refetches.
       staleTime: Infinity,
       gcTime: 1000 * 60 * 30, // 30 minutes in memory
       retry: 1,

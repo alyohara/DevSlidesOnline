@@ -26,8 +26,3 @@ export const SHORTCUTS = {
     description: "Duplicate slide",
   },
 } as const;
-
-/** Convert a definition into a Tauri menu accelerator string. */
-export function shortcutAccelerator(def: { keys: readonly string[] }): string {
-  return def.keys.map((k) => (k === "mod" ? "CmdOrCtrl" : k)).join("+");
-}

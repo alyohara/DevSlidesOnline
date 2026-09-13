@@ -4,7 +4,7 @@ export interface LanguageOption {
 }
 
 /**
- * Frontend fallback list for boot / browser contexts. In Tauri, the live
+ * Frontend fallback list for boot / browser contexts. The live
  * supported-language list is fetched from the backend and cached at runtime.
  */
 export const FALLBACK_SUPPORTED_LANGUAGES: readonly LanguageOption[] = [

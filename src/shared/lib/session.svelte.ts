@@ -11,7 +11,7 @@ interface SessionUser {
   username: string;
 }
 
-export type SessionStatus = "loading" | "authenticated" | "guest";
+type SessionStatus = "loading" | "authenticated" | "guest";
 
 export interface SessionState {
   status: SessionStatus;

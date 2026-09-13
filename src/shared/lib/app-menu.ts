@@ -1,10 +1,10 @@
 /**
- * Native application menu (macOS menu bar / Windows window menu).
+ * App-menu shortcut events.
  *
- * DevSlidesOnline runs fully in the browser, so there is no native menu to
- * install. The event contract is preserved for compatibility with
+ * DevSlidesOnline runs fully in the browser, so there is no native menu bar.
+ * The event contract is preserved for compatibility with
  * `subscribeToAppMenu` (which routes the same chords through a window keydown
- * listener); `installAppMenu` is intentionally a no-op.
+ * listener).
  */
 
 export type AppMenuEvent =
@@ -27,8 +27,3 @@ export type AppMenuEvent =
   | "menu://check-updates"
   | "menu://undo"
   | "menu://redo";
-
-/** No-op in the browser — the web app has no native menu bar. */
-export async function installAppMenu(): Promise<void> {
-  /* native menus are a desktop-only feature */
-}

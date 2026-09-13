@@ -1,8 +1,8 @@
 /**
  * Theme metadata fallback list.
  *
- * In Tauri, the live supported-theme list is fetched from the backend and used
- * at runtime. This fallback keeps browser/dev/test contexts working and avoids
+ * The live supported-theme list is fetched from the backend and used at
+ * runtime. This fallback keeps browser/dev/test contexts working and avoids
  * a blank UI before the async bootstrap fetch lands.
  */
 

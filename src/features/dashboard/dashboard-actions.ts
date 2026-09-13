@@ -1,5 +1,5 @@
 /**
- * Dashboard mutations, handlers and native-menu wiring (§6.8). The
+ * Dashboard mutations and handlers (menu shortcut wiring included). The
  * component keeps layout + effects; every mutation and cross-feature
  * handler is created here so they stay in one testable place.
  */
@@ -29,6 +29,7 @@ import {
   type AppMenuHandlers,
 } from "$lib/lib/app-menu.svelte";
 import type { createDashboardState } from "./dashboard-state.svelte";
+import { logout } from "$lib/lib/session.svelte";
 
 export function createDashboardActions(
   st: ReturnType<typeof createDashboardState>,
@@ -91,6 +92,10 @@ export function createDashboardActions(
     }
   }
 
+  async function signOut() {
+    await logout();
+  }
+
   return {
     createMutation,
     duplicateMutation,
@@ -106,6 +111,7 @@ export function createDashboardActions(
     confirmDelete,
     create,
     importProject,
+    signOut,
   };
 }
 

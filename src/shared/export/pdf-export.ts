@@ -6,8 +6,8 @@
  * blocks (requestHtml → Shiki worker, themeBackground / fallbackForeground,
  * the SlideImage layout model) so the exported artifact matches what the
  * presenter sees. Each page is rasterized to PNG via html-to-image and packed
- * into a JS PDF, then handed to the backend for a native save dialog
- * (base64 keeps the bytes small over the JSON IPC bridge).
+ * into a JS PDF, then triggered as a browser download (bytes stay in memory
+ * as base64 to hand off to the download helper).
  */
 import { jsPDF } from "jspdf";
 import { toPng } from "html-to-image";
@@ -217,8 +217,7 @@ export async function exportProjectToPdfById(
   return exportProjectToPdf(project);
 }
 
-/** Render the whole project to a PDF and persist it via a native save dialog. */
-export async function exportProjectToPdf(project: Project): Promise<string> {
+async function exportProjectToPdf(project: Project): Promise<string> {
   const { slides } = project;
   if (slides.length === 0) {
     throw new Error("This presentation has no slides to export");

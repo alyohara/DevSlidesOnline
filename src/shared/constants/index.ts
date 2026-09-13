@@ -1,6 +1,6 @@
 import type { Highlight, Slide } from "$lib/types";
 
-// ── App-wide defaults (mirrors src-tauri/src/models.rs) ──────────────
+// ── App-wide defaults (mirrors server/src/models.ts) ────────────────
 /** Default slide duration in milliseconds. */
 export const DEFAULT_SLIDE_DURATION_MS = 3000;
 /** Default slide transition duration in milliseconds. */

@@ -7,8 +7,8 @@ import type { Project } from "$lib/types";
  * Canonical "Add Slide" use-case.
  *
  * Keep starter-deck sequencing, starter highlights, pending state, and
- * active-slide selection here so every entry point (slide rail, native menu,
- * command palette, etc.) behaves identically.
+ * active-slide selection here so every entry point (slide rail, menu
+ * shortcut, command palette, etc.) behaves identically.
  */
 export function createAddSlide(
   projectId: string,

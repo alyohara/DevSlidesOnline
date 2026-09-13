@@ -1,7 +1,7 @@
 <script lang="ts">
   /**
-   * About dialog — app name/version (fetched from the Rust backend so it
-   * stays in sync with the crate version) plus external links.
+   * About dialog — app name/version (fetched from the server so it stays in
+   * sync with the released version) plus external links.
    */
   import { Bug, ExternalLink, X } from "@lucide/svelte";
   import { ui, setIsAboutOpen } from "$lib/stores/ui-state.svelte";

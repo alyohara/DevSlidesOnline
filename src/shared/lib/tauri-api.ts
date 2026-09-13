@@ -2,9 +2,9 @@
  * HTTP bridge to the DevSlidesOnline server.
  * All persistent mutations go through these helpers.
  *
- * The method/argument surface mirrors the desktop app's IPC bridge
- * (src-tauri commands) so the rest of the frontend is agnostic to the
- * transport — this file is the only place that knows about `fetch`.
+ * The method/argument surface mirrors the original desktop app's IPC bridge
+ * (Bun server REST endpoints now) so the rest of the frontend is agnostic to
+ * the transport — this file is the only place that knows about `fetch`.
  */
 import type {
   Highlight,
@@ -47,9 +47,10 @@ export interface UpdateInfo {
 }
 
 /** Error codes the backend sends in its structured { code, message } shape. */
-type CommandErrorCode = "CANCELLED" | "NOT_FOUND" | "VALIDATION" | "ERROR" | "UNAUTHORIZED";
+type CommandErrorCode =
+  "CANCELLED" | "NOT_FOUND" | "VALIDATION" | "ERROR" | "UNAUTHORIZED";
 
-export interface CommandErrorShape {
+interface CommandErrorShape {
   code?: CommandErrorCode;
   message?: string;
 }
@@ -64,15 +65,6 @@ export function isCancelledError(err: unknown): boolean {
     typeof err === "object" &&
     err !== null &&
     (err as { code?: unknown }).code === "CANCELLED"
-  );
-}
-
-/** True when the session expired mid-request — callers may re-auth. */
-export function isUnauthorizedError(err: unknown): boolean {
-  return (
-    typeof err === "object" &&
-    err !== null &&
-    (err as { code?: unknown }).code === "UNAUTHORIZED"
   );
 }
 
@@ -100,7 +92,9 @@ async function toCommandError(res: Response): Promise<CommandError> {
   } catch {
     /* not JSON */
   }
-  const out: CommandError = new Error(shape.message || `Request failed (${res.status})`);
+  const out: CommandError = new Error(
+    shape.message || `Request failed (${res.status})`,
+  );
   if (shape.code) out.code = shape.code;
   return out;
 }
@@ -131,7 +125,11 @@ async function request<T>(
   return (await res.json()) as T;
 }
 
-function triggerDownload(filename: string, content: string, mime: string): void {
+function triggerDownload(
+  filename: string,
+  content: string,
+  mime: string,
+): void {
   const blob = new Blob([content], { type: mime });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -183,7 +181,8 @@ function pickFileAsDataUrl(accept: string, maxBytes: number): Promise<string> {
       }
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result ?? ""));
-      reader.onerror = () => reject(new Error("Failed to read the selected file"));
+      reader.onerror = () =>
+        reject(new Error("Failed to read the selected file"));
       reader.readAsDataURL(file);
     });
     input.addEventListener("cancel", () => {
@@ -217,7 +216,8 @@ async function readClipboardImage(): Promise<string | null> {
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result ?? ""));
-        reader.onerror = () => reject(new Error("Failed to read clipboard image"));
+        reader.onerror = () =>
+          reject(new Error("Failed to read clipboard image"));
         reader.readAsDataURL(blob);
       });
       if (dataUrl && dataUrl.length > 12 * 1024 * 1024) {
@@ -242,7 +242,8 @@ export const api = {
   getDefaultSettings: <T = ProjectSettings>() =>
     request<T>("GET", "/api/meta/default-settings"),
 
-  getSupportedLanguages: () => request<LanguageOption[]>("GET", "/api/meta/languages"),
+  getSupportedLanguages: () =>
+    request<LanguageOption[]>("GET", "/api/meta/languages"),
 
   getSupportedThemes: () => request<ThemeMeta[]>("GET", "/api/meta/themes"),
 
@@ -250,29 +251,48 @@ export const api = {
     request<Project>("POST", "/api/projects", { name }),
 
   renameProject: (projectId: string, name: string) =>
-    request<Project>("PATCH", `/api/projects/${encodeURIComponent(projectId)}`, { name }),
+    request<Project>(
+      "PATCH",
+      `/api/projects/${encodeURIComponent(projectId)}`,
+      { name },
+    ),
 
   duplicateProject: (projectId: string) =>
-    request<Project>("POST", `/api/projects/${encodeURIComponent(projectId)}/duplicate`),
+    request<Project>(
+      "POST",
+      `/api/projects/${encodeURIComponent(projectId)}/duplicate`,
+    ),
 
   deleteProject: (projectId: string) =>
     request<void>("DELETE", `/api/projects/${encodeURIComponent(projectId)}`),
 
   updateProjectSettings: (projectId: string, settings: SettingsPatch) =>
-    request<Project>("PATCH", `/api/projects/${encodeURIComponent(projectId)}/settings`, {
-      settings,
-    }),
+    request<Project>(
+      "PATCH",
+      `/api/projects/${encodeURIComponent(projectId)}/settings`,
+      {
+        settings,
+      },
+    ),
 
   updateProjectTheme: (projectId: string, theme: string) =>
-    request<Project>("PATCH", `/api/projects/${encodeURIComponent(projectId)}/theme`, {
-      theme,
-    }),
+    request<Project>(
+      "PATCH",
+      `/api/projects/${encodeURIComponent(projectId)}/theme`,
+      {
+        theme,
+      },
+    ),
 
   createSlide: (projectId: string, opts?: { code?: string; name?: string }) =>
-    request<Slide>("POST", `/api/projects/${encodeURIComponent(projectId)}/slides`, {
-      code: opts?.code,
-      name: opts?.name,
-    }),
+    request<Slide>(
+      "POST",
+      `/api/projects/${encodeURIComponent(projectId)}/slides`,
+      {
+        code: opts?.code,
+        name: opts?.name,
+      },
+    ),
 
   deleteSlide: (projectId: string, slideId: string) =>
     request<Project>(
@@ -294,21 +314,35 @@ export const api = {
     ),
 
   updateSlideCode: (slideId: string, code: string) =>
-    request<void>("PATCH", `/api/slides/${encodeURIComponent(slideId)}/code`, { code }),
+    request<void>("PATCH", `/api/slides/${encodeURIComponent(slideId)}/code`, {
+      code,
+    }),
 
   cacheThumbnail: (slideId: string, code: string, html: string) =>
-    request<void>("PUT", `/api/slides/${encodeURIComponent(slideId)}/thumbnail`, {
-      code,
-      html,
-    }),
+    request<void>(
+      "PUT",
+      `/api/slides/${encodeURIComponent(slideId)}/thumbnail`,
+      {
+        code,
+        html,
+      },
+    ),
 
   updateSlideSettings: (slideId: string, payload: SlideSettingsPatch) =>
-    request<Slide>("PATCH", `/api/slides/${encodeURIComponent(slideId)}/settings`, payload),
+    request<Slide>(
+      "PATCH",
+      `/api/slides/${encodeURIComponent(slideId)}/settings`,
+      payload,
+    ),
 
   reorderSlides: (projectId: string, slideIds: string[]) =>
-    request<Project>("PUT", `/api/projects/${encodeURIComponent(projectId)}/slides/order`, {
-      slideIds,
-    }),
+    request<Project>(
+      "PUT",
+      `/api/projects/${encodeURIComponent(projectId)}/slides/order`,
+      {
+        slideIds,
+      },
+    ),
 
   setCurrentSlide: (projectId: string, slideId: string) =>
     request<void>(
@@ -319,10 +353,10 @@ export const api = {
 
   /** Fetch the export JSON and trigger a browser download; returns the filename. */
   exportProjectToJson: async (projectId: string): Promise<string> => {
-    const { filename, content } = await request<{ filename: string; content: string }>(
-      "GET",
-      `/api/projects/${encodeURIComponent(projectId)}/export.json`,
-    );
+    const { filename, content } = await request<{
+      filename: string;
+      content: string;
+    }>("GET", `/api/projects/${encodeURIComponent(projectId)}/export.json`);
     triggerDownload(filename, content, "application/json");
     return filename;
   },
@@ -346,12 +380,17 @@ export const api = {
 
   /** Prompt for a JSON file and import it as a new presentation. */
   importProjectFromJson: async (): Promise<Project> => {
-    const dataUrl = await pickFileAsDataUrl(".json,application/json", 50 * 1024 * 1024);
+    const dataUrl = await pickFileAsDataUrl(
+      ".json,application/json",
+      50 * 1024 * 1024,
+    );
     if (!dataUrl) throw cancelledError("Import cancelled");
     const payloadBase64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
     let payload: unknown;
     try {
-      payload = JSON.parse(new TextDecoder().decode(base64ToBytes(payloadBase64)));
+      payload = JSON.parse(
+        new TextDecoder().decode(base64ToBytes(payloadBase64)),
+      );
     } catch {
       throw new Error("That file isn't a valid presentation file");
     }
@@ -384,13 +423,20 @@ export const api = {
     ),
 
   stackProjects: (sourceIds: string[], targetId: string) =>
-    request<ProjectSummary[]>("POST", "/api/stacks/projects", { sourceIds, targetId }),
+    request<ProjectSummary[]>("POST", "/api/stacks/projects", {
+      sourceIds,
+      targetId,
+    }),
 
   unstackProjects: (projectIds: string[]) =>
     request<ProjectSummary[]>("DELETE", "/api/stacks/projects", { projectIds }),
 
   stackSlides: (projectId: string, sourceIds: string[], targetId: string) =>
-    request<Slide[]>("POST", "/api/stacks/slides", { projectId, sourceIds, targetId }),
+    request<Slide[]>("POST", "/api/stacks/slides", {
+      projectId,
+      sourceIds,
+      targetId,
+    }),
 
   unstackSlides: (projectId: string, slideIds: string[]) =>
     request<Slide[]>("DELETE", "/api/stacks/slides", { projectId, slideIds }),
@@ -414,7 +460,9 @@ export const api = {
       /* fall back to the static version */
     }
     try {
-      const res = await fetch(`${base.replace("github.com", "api.github.com/repos")}/releases/latest`);
+      const res = await fetch(
+        `${base.replace("github.com", "api.github.com/repos")}/releases/latest`,
+      );
       if (!res.ok) throw new Error(`GitHub responded with ${res.status}`);
       const release = (await res.json()) as {
         tag_name?: string;

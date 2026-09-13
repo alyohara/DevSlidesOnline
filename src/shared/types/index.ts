@@ -1,7 +1,7 @@
 /**
- * Core domain types for DevSlides desktop.
- * Persistent data is owned by the Rust/SQLite backend;
- * these types mirror the IPC JSON contracts.
+ * Core domain types for DevSlidesOnline.
+ * Persistent data is owned by the server (Bun + SQLite);
+ * these types mirror the REST JSON contracts.
  */
 
 type CodeAlign = "left" | "center";
@@ -129,7 +129,7 @@ export interface ProjectSettings {
   codeAlign: CodeAlign;
 }
 
-/** Single source of truth for highlight defaults; mirrors Rust serde defaults. */
+/** Single source of truth for highlight defaults; mirrors server defaults. */
 export const HIGHLIGHT_DEFAULTS = {
   dimAmount: 75,
   sizeUpEnabled: true,

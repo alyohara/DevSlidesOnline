@@ -1,6 +1,6 @@
 <script lang="ts">
   /** Project dashboard orchestrator. */
-  import { Command as CommandIcon, Plus, Upload } from "@lucide/svelte";
+  import { Command as CommandIcon, LogOut, Plus, Upload } from "@lucide/svelte";
   import Button from "$lib/ui/Button.svelte";
   import TitleBar from "$lib/components/TitleBar.svelte";
   import CommandPalette from "$lib/components/CommandPalette.svelte";
@@ -126,6 +126,15 @@
       </Button>
       <Button onclick={() => (st.creating = true)} class="gap-2" size="sm">
         <Plus class="h-4 w-4" />New Presentation
+      </Button>
+      <Button
+        variant="outline"
+        size="sm"
+        class="gap-1.5"
+        onclick={() => void actions.signOut()}
+        title="Sign out"
+      >
+        <LogOut class="h-4 w-4" />Sign out
       </Button>
     {/snippet}
   </TitleBar>

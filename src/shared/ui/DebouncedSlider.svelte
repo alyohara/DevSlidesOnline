@@ -3,12 +3,12 @@
   import Slider from "./Slider.svelte";
 
   /**
-   * DebouncedSlider — fixes slider IPC spam (8 IPC calls per drag → 1)
-   * but now supports instant preview via onValueChange.
+   * DebouncedSlider — fixes slider save spam (8 saves per drag → 1) but now
+   * supports instant preview via onValueChange.
    *
    * - Local state for thumb position (immediate)
    * - onValueChange (instant) → updates the preview rune store for live SlidePreview
-   * - onValueCommit (pointer up) → fires Tauri IPC + TanStack Query + clears preview sync
+   * - onValueCommit (pointer up) → fires the settings mutation + clears preview sync
    */
   let {
     value,
@@ -31,7 +31,7 @@
     disabled?: boolean;
     /** Instant update (drag) — for preview rune state */
     onValueChange?: (value: number[]) => void;
-    /** DB commit (pointer up) — for IPC */
+    /** DB commit (pointer up) — settings mutation */
     onValueCommit?: (value: number[]) => void;
     /** Convenience single-value callbacks */
     onChange?: (value: number) => void;
