@@ -1,6 +1,8 @@
 services:
   devslides-online:
+    image: biancoal/devslides-online:latest
     build: .
+    container_name: devslides-online
     ports:
       - "1420:1420"
     volumes:

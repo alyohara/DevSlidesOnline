@@ -45,16 +45,27 @@ Open http://localhost:1420, create an account, and start a deck.
 
 ## Production / Docker
 
-```bash
-bun run build          # builds the SPA into dist/
-bun run server/src/index.ts   # serves dist/ + API on :1420 (default PORT in Docker)
-```
-
-Or with containers:
+Official image on Docker Hub: [`biancoal/devslides-online`](https://hub.docker.com/r/biancoal/devslides-online) (multi-arch `linux/amd64` + `linux/arm64`).
 
 ```bash
-docker compose up --build
+# pull & run the published image
+docker compose up -d          # uses the image from Docker Hub
+
+# …or build from source instead of pulling
+docker compose up -d --build
 ```
+
+Quick-start with `docker run`:
+
+```bash
+docker run -d --name devslides-online --restart unless-stopped \
+  -p 1420:1420 \
+  -v devslides-data:/app/data \
+  -e DATABASE_PATH=/app/data/devslides.db \
+  biancoal/devslides-online:latest
+```
+
+Open http://<host>:1420 and create an account. The session cookie works over plain HTTP and behind a TLS reverse proxy (scheme is auto-detected).
 
 The compose file mounts a `devslides-data` volume for the SQLite database.
 
