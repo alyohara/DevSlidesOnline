@@ -5,32 +5,47 @@ Self-hosted slides editor for developers (Svelte + Bun + SQLite), published as
 
 ## Files
 
-- `docker-compose.yml` — compose app with `x-casaos` metadata (this is the
-  manifest; the file already worked as a plain `docker compose up -d`).
+- `docker-compose.yml` — compose app with `x-casaos` metadata (the manifest).
 - `icon.png` — app icon (256x223).
 
-## Install options
+## Install — recommended (store-style)
 
-### A. Custom install (web UI)
-
-CasaOS → **Apps** → **+** → **Install custom app** → paste the contents of
-`docker-compose.yml` → adjust the port if needed → **Install**.
-
-### B. Copy the app folder (store-style)
+CasaOS runs this compose file as-is (ports, volume, env and metadata all apply).
+On the CasaOS server:
 
 ```bash
-sudo cp -r apps/devslidesonline /var/lib/casaos/apps/
+sudo mkdir -p /var/lib/casaos/apps/devslidesonline
+sudo cp docker-compose.yml icon.png /var/lib/casaos/apps/devslidesonline/
 sudo casaos-cli app-management install devslidesonline
 ```
 
-Then open **http://<casaos-ip>:1420**, create your account and start a deck.
+Refresh the CasaOS web UI; the app appears in **Apps** with its icon.
+Open **http://<casaos-ip>:1420**, create your account and start a deck.
+
+## Install — alternative (web UI form)
+
+CasaOS → **Apps** → **+** → **Install custom app**. Note this form fills in
+only image/tag/title from a pasted compose; **ports, volumes, env and icon must
+be added by hand**:
+
+| Field                              | Value                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------- |
+| Imagen Docker                      | `biancoal/devslides-online`                                             |
+| Tag                                | `latest`                                                                |
+| Título                             | `DevSlides Online`                                                      |
+| Icono URL                          | `https://raw.githubusercontent.com/alyohara/DevSlidesOnline/main/apps/devslidesonline/icon.png` |
+| Web UI                             | `http://<casaos-ip>` puerto `1420`                                      |
+| Red                                | `bridge` (default)                                                      |
+| Puerto (añadir)                    | host `1420` → container `1420` (`tcp`)                                  |
+| Volumen (añadir)                   | host `/DATA/AppData/devslidesonline/data` → container `/app/data`       |
+| Variables de entorno (añadir)      | `NODE_ENV=production`, `PORT=1420`, `DATABASE_PATH=/app/data/devslides.db` |
+| Política de reinicio               | `unless-stopped`                                                        |
 
 ## Data
 
-The SQLite database is stored in the named volume `devslidesonline_devslides-data`
-(`/app/data` inside the container). Back it up with:
+SQLite lives in `/DATA/AppData/devslidesonline/data` (bind-mounted to
+`/app/data`). Back it up by copying that folder, e.g.:
 
 ```bash
-docker run --rm -v devslidesonline_devslides-data:/data -v "$PWD":/backup \
-  alpine tar czf /backup/devslides.db.tar.gz -C /data .
+sudo tar czf devslides-backup.tar.gz /DATA/AppData/devslidesonline/data
 ```

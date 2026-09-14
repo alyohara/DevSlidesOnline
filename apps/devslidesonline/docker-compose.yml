@@ -1,27 +1,27 @@
 # CasaOS app: DevSlides Online
-# Install: copy this folder to /var/lib/casaos/apps/devslidesonline/ and
-# reload, or paste this compose in CasaOS -> Apps -> Install custom app.
+# Recommended install (store-style):
+#   sudo mkdir -p /var/lib/casaos/apps/devslidesonline
+#   copy docker-compose.yml + icon.png into that folder
+#   sudo casaos-cli app-management install devslidesonline
+# Then open http://<casaos-ip>:1420
 
 name: devslidesonline
 
 services:
   devslides-online:
     image: biancoal/devslides-online:latest
-    container_name: devslides-online
+    container_name: devslidesonline
     ports:
       - target: 1420
         published: "1420"
         protocol: tcp
     volumes:
-      - devslides-data:/app/data
+      - /DATA/AppData/devslidesonline/data:/app/data
     environment:
       NODE_ENV: production
       PORT: 1420
       DATABASE_PATH: /app/data/devslides.db
     restart: unless-stopped
-
-volumes:
-  devslides-data:
 
 x-casaos:
   id: dev.biancoal.devslidesonline
