@@ -2,15 +2,9 @@
   import SlidePreview from "@/features/preview/SlidePreview.svelte";
   import RenderBoundary from "$lib/components/RenderBoundary.svelte";
   import HighlightStepIndicator from "@/features/highlights/HighlightStepIndicator.svelte";
-  import SlideImagesPanel from "@/features/images/SlideImagesPanel.svelte";
-  import { createImageSave } from "@/features/images/save-images.svelte";
   import { untrack } from "svelte";
-  import { imageEditorState } from "@/features/images/image-editor-state.svelte";
-  import {
-    effectiveSlideImages,
-    setLocalImages,
-  } from "$lib/stores/slide-images.svelte";
-  import type { Project, Slide, SlideImage } from "$lib/types";
+  import { createImageEditor } from "@/features/images/image-editor.svelte";
+  import type { Project, Slide } from "$lib/types";
 
   let {
     project,
@@ -26,32 +20,12 @@
     onSelectHighlight: (index: number) => boolean;
   } = $props();
 
-  const slideImages = $derived(effectiveSlideImages(activeSlide));
-
-  const imageSave = createImageSave({
+  // Shared with the code-column image panel so drag/resize and panel edits
+  // keep the same local shadow + debounced save.
+  const { patchImage, removeImage } = createImageEditor({
     projectId: untrack(() => project.id),
-    slideId: () => activeSlide?.id,
+    activeSlide: () => activeSlide,
   });
-
-  function replaceImages(next: SlideImage[]) {
-    if (!activeSlide) return;
-    setLocalImages(activeSlide.id, next);
-    imageSave.schedule(activeSlide.id, next);
-  }
-
-  function patchImage(id: string, patch: Partial<SlideImage>) {
-    replaceImages(
-      slideImages.map((i) => (i.id === id ? { ...i, ...patch } : i)),
-    );
-  }
-
-  function addImage(img: SlideImage) {
-    replaceImages([...slideImages, img]);
-  }
-
-  function removeImage(id: string) {
-    replaceImages(slideImages.filter((i) => i.id !== id));
-  }
 </script>
 
 <div
@@ -86,18 +60,4 @@
       </div>
     {/if}
   </div>
-
-  {#if imageEditorState.open}
-    <div
-      class="absolute top-3 right-3 z-[60] w-64 rounded-lg border bg-card/95 shadow-lg backdrop-blur"
-    >
-      <SlideImagesPanel
-        slideId={activeSlide?.id}
-        images={slideImages}
-        onPatch={patchImage}
-        onAdd={addImage}
-        onRemove={removeImage}
-      />
-    </div>
-  {/if}
 </div>

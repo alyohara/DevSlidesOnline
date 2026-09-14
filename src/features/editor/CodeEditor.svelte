@@ -36,6 +36,9 @@
   import CodeEditorHeader from "@/features/editor/CodeEditorHeader.svelte";
   import CodeEditorBody from "@/features/editor/CodeEditorBody.svelte";
   import CodeEditorFooter from "@/features/editor/CodeEditorFooter.svelte";
+  import SlideImagesPanel from "@/features/images/SlideImagesPanel.svelte";
+  import { imageEditorState } from "@/features/images/image-editor-state.svelte";
+  import { createImageEditor } from "@/features/images/image-editor.svelte";
 
   let {
     project,
@@ -152,6 +155,11 @@
     Math.max(2, String(lineCount).length) * 0.65 + 1.25,
   );
   const defaultFg = $derived(fallbackForeground(theme));
+
+  const { slideImages, patchImage, addImage, removeImage } = createImageEditor({
+    projectId,
+    activeSlide: () => slide,
+  });
 </script>
 
 {#if !slide}
@@ -159,7 +167,7 @@
     No slide selected
   </div>
 {:else}
-  <div class="flex h-full min-w-0 flex-col bg-card">
+  <div class="relative flex h-full min-w-0 flex-col bg-card">
     <CodeEditorHeader
       {project}
       {currentIndex}
@@ -226,5 +234,19 @@
       onMove={crud.moveHighlight}
       onReorder={crud.reorderHighlights}
     />
+
+    {#if imageEditorState.open}
+      <div
+        class="absolute inset-y-0 right-0 z-[60] w-72 overflow-y-auto border-l bg-card/95 shadow-lg backdrop-blur"
+      >
+        <SlideImagesPanel
+          {slideId}
+          images={slideImages}
+          onPatch={patchImage}
+          onAdd={addImage}
+          onRemove={removeImage}
+        />
+      </div>
+    {/if}
   </div>
 {/if}
