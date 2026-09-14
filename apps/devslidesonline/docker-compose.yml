@@ -29,7 +29,7 @@ x-casaos:
   index: /
   port_map: "1420"
   scheme: http
-  icon: ./icon.png
+  icon: https://raw.githubusercontent.com/alyohara/DevSlidesOnline/main/apps/devslidesonline/icon.png
   title:
     en_us: DevSlides Online
     es_es: DevSlides Online
