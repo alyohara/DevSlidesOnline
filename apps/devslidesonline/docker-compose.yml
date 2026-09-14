@@ -1,0 +1,64 @@
+# CasaOS app: DevSlides Online
+# Install: copy this folder to /var/lib/casaos/apps/devslidesonline/ and
+# reload, or paste this compose in CasaOS -> Apps -> Install custom app.
+
+name: devslidesonline
+
+services:
+  devslides-online:
+    image: biancoal/devslides-online:latest
+    container_name: devslides-online
+    ports:
+      - target: 1420
+        published: "1420"
+        protocol: tcp
+    volumes:
+      - devslides-data:/app/data
+    environment:
+      NODE_ENV: production
+      PORT: 1420
+      DATABASE_PATH: /app/data/devslides.db
+    restart: unless-stopped
+
+volumes:
+  devslides-data:
+
+x-casaos:
+  id: dev.biancoal.devslidesonline
+  main: devslides-online
+  index: /
+  port_map: "1420"
+  scheme: http
+  icon: ./icon.png
+  title:
+    en_us: DevSlides Online
+    es_es: DevSlides Online
+  tagline:
+    en_us: Create, edit and present developer slides with live preview
+    es_es: Creá, editá y presentá diapositivas para desarrolladores con vista previa en vivo
+  description:
+    en_us: |
+      100% self-hosted slides editor for developers. Write slides in a code editor
+      with live preview and present them in the browser. No cloud, your data
+      lives on your server in a single SQLite file.
+    es_es: |
+      Editor de diapositivas para desarrolladores 100% auto-alojado. Escribí tus
+      diapositivas en un editor de código con vista previa en vivo y presentá
+      desde el navegador. Sin nube: tus datos viven en tu servidor, en un único
+      archivo SQLite.
+  tips:
+    before_install:
+      en_us: |
+        Open http://<server-ip>:1420 and create your account on first run.
+        The session cookie works over plain HTTP.
+      es_es: |
+        Abrí http://<ip-del-servidor>:1420 y creá tu cuenta en el primer uso.
+        La cookie de sesión funciona por HTTP plano.
+  author: Angel Leonardo Bianco
+  developer: Angel Leonardo Bianco
+  category: Productivity
+  architectures:
+    - amd64
+    - arm64
+  version: "0.1.0"
+  update_at: "2026-09-14"
